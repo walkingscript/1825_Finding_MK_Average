@@ -40,7 +40,7 @@ func main() {
 			obj.AddElement(<-data)
 		case "calculateMKAverage":
 			res = obj.CalculateMKAverage()
-			fmt.Println(res)
+			fmt.Printf("%d ", res)
 		}
 	}
 
