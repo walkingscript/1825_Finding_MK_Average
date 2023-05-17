@@ -92,6 +92,15 @@ func (avgObject *MKAverage) CalculateMKAverage() int {
 	if len(avgObject.stream) < avgObject.m {
 		return -1
 	}
+	return avgObject.GetAverage()
+}
+
+var cachedResult int
+
+func (avgObject *MKAverage) GetAverage() int {
+	if cachedResult == avgObject.stream[len(avgObject.stream)-1] {
+		return cachedResult
+	}
 	avgObject.tree.Reset()
 	items := avgObject.stream[len(avgObject.stream)-avgObject.m:]
 	for _, item := range items {
@@ -99,13 +108,13 @@ func (avgObject *MKAverage) CalculateMKAverage() int {
 	}
 	avgObject.container = avgObject.tree.Root.GetSortedArray()
 	avgObject.container = avgObject.container[avgObject.k : len(avgObject.container)-avgObject.k]
-	return int(float64(Sum(avgObject.container)) / float64(len(avgObject.container)))
+	cachedResult = Sum(avgObject.container) / len(avgObject.container)
+	return cachedResult
 }
 
-func Sum(nums []int) int {
-	var sum int
+func Sum(nums []int) (sum int) {
 	for _, n := range nums {
 		sum += n
 	}
-	return sum
+	return
 }
