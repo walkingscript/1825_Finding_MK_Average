@@ -48,6 +48,6 @@ Constraints:
 
     3 <= m <= 105
     1 <= k*2 < m
-    1 <= num <= 105
-    At most 105 calls will be made to addElement and calculateMKAverage.
+    1 <= num <= 10^5
+    At most 10^5 calls will be made to addElement and calculateMKAverage.
 
