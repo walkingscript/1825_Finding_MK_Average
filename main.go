@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var TEST_CASE_DIR = "input_data/in"
+	var TEST_CASE_DIR = "input_data/in2"
 
 	cmdsBytes, err := os.ReadFile(fmt.Sprintf("%s/commands", TEST_CASE_DIR))
 	if err != nil {
@@ -69,52 +69,43 @@ func ProduceData(data chan<- int, dataSlice []string) {
 const CAPACITY = 100
 
 type MKAverage struct {
-	m, k              int
-	stream, container []int
-	tree              BinTree
+	m, k                int
+	leftSide, rightSide []int
+	mid                 BinTree
 }
 
 func Constructor(m int, k int) MKAverage {
 	var obj = MKAverage{m: m, k: k}
-	obj.stream = make([]int, 0, m+100)
-	obj.container = make([]int, 0, m)
+	obj.leftSide = make([]int, 0, k)
+	obj.rightSide = make([]int, 0, k)
 	return obj
 }
 
 func (avgObject *MKAverage) AddElement(num int) {
-	avgObject.stream = append(avgObject.stream, num)
-	if len(avgObject.stream) > avgObject.m {
-		avgObject.stream = avgObject.stream[1:]
+	if avgObject.mid.ItemsCount == avgObject.m {
+		midMin, midMax := avgObject.mid.Min(), avgObject.mid.Max()
+		if num <= midMin {
+			avgObject.leftSide = append(avgObject.leftSide, num)
+		} else if num >= midMax {
+			avgObject.rightSide = append(avgObject.rightSide, num)
+		} else {
+			if num < avgObject.mid.Root.Value {
+				avgObject.leftSide = append(avgObject.leftSide, avgObject.mid.PopLeft())
+			} else {
+				avgObject.rightSide = append(avgObject.rightSide, avgObject.mid.PopRight())
+			}
+		}
 	}
+	avgObject.mid.Insert(num)
 }
 
 func (avgObject *MKAverage) CalculateMKAverage() int {
-	if len(avgObject.stream) < avgObject.m {
+	if avgObject.mid.ItemsCount < avgObject.m {
 		return -1
 	}
 	return avgObject.GetAverage()
 }
 
-var cachedResult int
-
-func (avgObject *MKAverage) GetAverage() int {
-	if cachedResult == avgObject.stream[len(avgObject.stream)-1] {
-		return cachedResult
-	}
-	avgObject.tree.Reset()
-	items := avgObject.stream[len(avgObject.stream)-avgObject.m:]
-	for _, item := range items {
-		avgObject.tree.Insert(item)
-	}
-	avgObject.container = avgObject.tree.Root.GetSortedArray()
-	avgObject.container = avgObject.container[avgObject.k : len(avgObject.container)-avgObject.k]
-	cachedResult = Sum(avgObject.container) / len(avgObject.container)
-	return cachedResult
-}
-
-func Sum(nums []int) (sum int) {
-	for _, n := range nums {
-		sum += n
-	}
-	return
+func (avgObject *MKAverage) GetAverage() ItemType {
+	return avgObject.mid.Sum() / avgObject.mid.ItemsCount
 }

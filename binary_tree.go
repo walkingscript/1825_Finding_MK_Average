@@ -3,7 +3,8 @@ package main
 type ItemType = int
 
 type BinTree struct {
-	Root *Node
+	Root       *Node
+	ItemsCount int
 }
 
 type Node struct {
@@ -17,6 +18,7 @@ func (tree *BinTree) Insert(value ItemType) {
 	} else {
 		tree.Root.insert(value)
 	}
+	tree.ItemsCount++
 }
 
 func (node *Node) insert(value ItemType) {
@@ -45,6 +47,77 @@ func (node *Node) GetSortedArray() []ItemType {
 		results = append(results, node.Right.GetSortedArray()...)
 	}
 	return results
+}
+
+func (tree *BinTree) Min() ItemType {
+	return tree.Root.min()
+}
+
+func (tree *BinTree) Max() ItemType {
+	return tree.Root.max()
+}
+
+func (node *Node) min() ItemType {
+	currentNode := node
+	for currentNode.Left != nil {
+		currentNode = currentNode.Left
+	}
+	return currentNode.Value
+}
+
+func (node *Node) max() ItemType {
+	currentNode := node
+	for currentNode.Right != nil {
+		currentNode = currentNode.Right
+	}
+	return currentNode.Value
+}
+
+func (tree *BinTree) PopLeft() (value ItemType) {
+	defer func() { tree.ItemsCount-- }()
+	return tree.Root.popLeft()
+}
+
+func (tree *BinTree) PopRight() (value ItemType) {
+	defer func() { tree.ItemsCount-- }()
+	return tree.Root.popRight()
+}
+
+func (node *Node) popLeft() (value ItemType) {
+	if node == nil {
+		panic("popLeft: can't pop value; not enougth items")
+	}
+	currentNode := node
+	if currentNode.Left != nil { // can be removed because in terms m >= 3
+		for currentNode.Left.Left != nil {
+			currentNode = currentNode.Left
+		}
+	}
+	value = currentNode.Left.Value
+	currentNode.Left = nil
+	return value
+}
+
+func (node *Node) popRight() (value ItemType) {
+	if node == nil {
+		panic("popRight: can't pop value; not enougth items")
+	}
+	currentNode := node
+	if currentNode.Right != nil { // can be removed because in terms m >= 3
+		for currentNode.Right.Right != nil {
+			currentNode = currentNode.Right
+		}
+	}
+	value = currentNode.Right.Value
+	currentNode.Right = nil
+	return value
+}
+
+func (tree *BinTree) Sum() (sum ItemType) {
+	for _, n := range tree.Root.GetSortedArray() {
+		sum += n
+	}
+	return
 }
 
 func (tree *BinTree) Reset() {
