@@ -3,8 +3,8 @@ package main
 type ItemType = int
 
 type BinTree struct {
-	Root       *Node
-	ItemsCount int
+	Root  *Node
+	Count int
 }
 
 type Node struct {
@@ -18,7 +18,7 @@ func (tree *BinTree) Insert(value ItemType) {
 	} else {
 		tree.Root.insert(value)
 	}
-	tree.ItemsCount++
+	tree.Count++
 }
 
 func (node *Node) insert(value ItemType) {
@@ -74,18 +74,32 @@ func (node *Node) max() ItemType {
 }
 
 func (tree *BinTree) PopLeft() (value ItemType) {
-	defer func() { tree.ItemsCount-- }()
+	defer tree.DecreaseCounter()
+	if tree.Root.Left == nil {
+		value = tree.Root.Value
+		tree.Root = tree.Root.Right
+		return value
+	}
 	return tree.Root.popLeft()
 }
 
 func (tree *BinTree) PopRight() (value ItemType) {
-	defer func() { tree.ItemsCount-- }()
+	defer tree.DecreaseCounter()
+	if tree.Root.Right == nil {
+		value = tree.Root.Value
+		tree.Root = tree.Root.Left
+		return value
+	}
 	return tree.Root.popRight()
+}
+
+func (tree *BinTree) DecreaseCounter() {
+	tree.Count--
 }
 
 func (node *Node) popLeft() (value ItemType) {
 	if node == nil {
-		panic("popLeft: can't pop value; not enougth items")
+		panic("popLeft: can't pop value; not enough items")
 	}
 	currentNode := node
 	if currentNode.Left != nil { // can be removed because in terms m >= 3
@@ -94,13 +108,17 @@ func (node *Node) popLeft() (value ItemType) {
 		}
 	}
 	value = currentNode.Left.Value
-	currentNode.Left = nil
+	if currentNode.Left.Right != nil {
+		currentNode.Left = currentNode.Left.Right
+	} else {
+		currentNode.Left = nil
+	}
 	return value
 }
 
 func (node *Node) popRight() (value ItemType) {
 	if node == nil {
-		panic("popRight: can't pop value; not enougth items")
+		panic("popRight: can't pop value; not enough items")
 	}
 	currentNode := node
 	if currentNode.Right != nil { // can be removed because in terms m >= 3
@@ -109,7 +127,11 @@ func (node *Node) popRight() (value ItemType) {
 		}
 	}
 	value = currentNode.Right.Value
-	currentNode.Right = nil
+	if currentNode.Right.Left != nil {
+		currentNode.Right = currentNode.Right.Left
+	} else {
+		currentNode.Right = nil
+	}
 	return value
 }
 

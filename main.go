@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var TEST_CASE_DIR = "input_data/in2"
+	var TEST_CASE_DIR = "input_data/in3"
 
 	cmdsBytes, err := os.ReadFile(fmt.Sprintf("%s/commands", TEST_CASE_DIR))
 	if err != nil {
@@ -23,8 +23,8 @@ func main() {
 	cmdStrings := strings.Split(string(cmdsBytes), "\n")
 	dataStrings := strings.Split(string(dataBytes), "\n")
 
-	cmds := make(chan string, 25000)
-	data := make(chan int, 25000)
+	cmds := make(chan string, 50000)
+	data := make(chan int, 50000)
 
 	go ProduceCmds(cmds, cmdStrings)
 	go ProduceData(data, dataStrings)
@@ -69,43 +69,41 @@ func ProduceData(data chan<- int, dataSlice []string) {
 const CAPACITY = 100
 
 type MKAverage struct {
-	m, k                int
-	leftSide, rightSide []int
-	mid                 BinTree
+	m, k        int
+	Left, Right []int
+	Mid         BinTree
 }
 
 func Constructor(m int, k int) MKAverage {
 	var obj = MKAverage{m: m, k: k}
-	obj.leftSide = make([]int, 0, k)
-	obj.rightSide = make([]int, 0, k)
 	return obj
 }
 
-func (avgObject *MKAverage) AddElement(num int) {
-	if avgObject.mid.ItemsCount == avgObject.m {
-		midMin, midMax := avgObject.mid.Min(), avgObject.mid.Max()
-		if num <= midMin {
-			avgObject.leftSide = append(avgObject.leftSide, num)
-		} else if num >= midMax {
-			avgObject.rightSide = append(avgObject.rightSide, num)
-		} else {
-			if num < avgObject.mid.Root.Value {
-				avgObject.leftSide = append(avgObject.leftSide, avgObject.mid.PopLeft())
-			} else {
-				avgObject.rightSide = append(avgObject.rightSide, avgObject.mid.PopRight())
-			}
-		}
-	}
-	avgObject.mid.Insert(num)
+func (MKAvgObject *MKAverage) AddElement(num int) {
+	MKAvgObject.Mid.Insert(num)
 }
 
-func (avgObject *MKAverage) CalculateMKAverage() int {
-	if avgObject.mid.ItemsCount < avgObject.m {
+func (MKAvgObject *MKAverage) CalculateMKAverage() int {
+	if MKAvgObject.Mid.Count < MKAvgObject.m {
 		return -1
 	}
-	return avgObject.GetAverage()
+	if MKAvgObject.Mid.Count >= MKAvgObject.m {
+		for i := 0; i < MKAvgObject.k; i++ {
+			MKAvgObject.Left = append(MKAvgObject.Left, MKAvgObject.Mid.PopLeft())
+			MKAvgObject.Right = append(MKAvgObject.Right, MKAvgObject.Mid.PopRight())
+		}
+	}
+	return MKAvgObject.GetAverage()
 }
 
-func (avgObject *MKAverage) GetAverage() ItemType {
-	return avgObject.mid.Sum() / avgObject.mid.ItemsCount
+func (MKAvgObject *MKAverage) GetAverage() ItemType {
+	return MKAvgObject.Mid.Sum() / MKAvgObject.Mid.Count
+}
+
+func Sum(items []ItemType) ItemType {
+	var total ItemType
+	for _, item := range items {
+		total += item
+	}
+	return total
 }
